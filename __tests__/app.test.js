@@ -24,8 +24,9 @@ describe('GET /api/categories',()=>{
         .get('/api/categories')
         .expect(200)
         .then((res)=>{
-            expect(Array.isArray(res.body)).toBe(true)
-            res.body.forEach((category)=>{
+            expect(typeof res.body).toBe('object')
+            expect(Array.isArray(res.body.categories)).toBe(true)
+            res.body.categories.forEach((category)=>{
                 expect(typeof category).toBe('object')
             })
         })
@@ -35,7 +36,8 @@ describe('GET /api/categories',()=>{
         .get('/api/categories')
         .expect(200)
         .then((res)=>{
-            res.body.forEach((category)=>{
+            expect(res.body.categories).toHaveLength(4)
+            res.body.categories.forEach((category)=>{
                 expect(category).toEqual(
                     expect.objectContaining({
                         slug: expect.any(String),
@@ -54,3 +56,53 @@ describe('GET /api/categories',()=>{
         })
     })
 })
+
+describe('GET /api/reviews', ()=>{
+    test('responds with staus code 200', ()=>{
+        return request(app)
+        .get('/api/reviews')
+        .expect(200)
+    })
+    test('responds with an array of review objects', ()=>{
+        return request(app)
+        .get('/api/reviews')
+        .expect(200)
+        .then((res)=>{
+            expect(Array.isArray(res.body.reviews)).toBe(true)
+            res.body.reviews.forEach((review)=>{
+                expect(typeof review).toBe('object')
+                expect(review).toEqual(
+                    expect.objectContaining({
+                        owner: expect.any(String),
+                        title: expect.any(String),
+                        review_id: expect.any(Number),
+                        category: expect.any(String),
+                        review_img_url: expect.any(String),
+                        created_at: expect.any(String),
+                        votes: expect.any(Number),
+                        designer: expect.any(String),
+                        comment_count: expect.any(String)
+                    })
+                )
+            })
+        })
+    })
+    test('Reviews are ordered in descending order of dates', ()=>{
+        return request(app)
+        .get('/api/reviews')
+        .expect(200)
+        .then((res)=>{
+            expect(res.body.reviews).toBeSortedBy('created_at', {descending: true, coerce: true})
+        })
+    })
+    test('responds with route not found when api address spelt wrong', ()=>{
+        return request(app)
+        .get('/api/review')
+        .expect(404)
+        .then((res)=>{
+            expect(res.body.msg).toEqual('Route not found')
+        })
+    })
+})
+
+

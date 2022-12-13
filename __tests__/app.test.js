@@ -47,23 +47,12 @@ describe('GET /api/categories',()=>{
             })
         })
     })
-    test('responds with route not found when api address spelt wrong', ()=>{
-        return request(app)
-        .get('/api/categries')
-        .expect(404)
-        .then((res)=>{
-            expect(res.body.msg).toEqual('Route not found')
-        })
-    })
 })
 
+
+
 describe('GET /api/reviews', ()=>{
-    test('responds with staus code 200', ()=>{
-        return request(app)
-        .get('/api/reviews')
-        .expect(200)
-    })
-    test('responds with an array of review objects', ()=>{
+    test('responds with status code 200 and an array of review objects', ()=>{
         return request(app)
         .get('/api/reviews')
         .expect(200)
@@ -95,14 +84,65 @@ describe('GET /api/reviews', ()=>{
             expect(res.body.reviews).toBeSortedBy('created_at', {descending: true, coerce: true})
         })
     })
+})
+
+
+describe('GET /api/reviews/:review_id', ()=>{
+    test('responds with status code 200 and a review object', ()=>{
+        return request(app)
+        .get('/api/reviews/1')
+        .expect(200)
+        .then((res)=>{
+            expect(typeof res.body).toBe('object')
+            expect(typeof res.body.review).toBe('object')
+        })
+    })
+    test('responds with the correct review keys', ()=>{
+        return request(app)
+        .get('/api/reviews/1')
+        .expect(200)
+        .then((res)=>{
+            expect(res.body.review).toEqual(
+                expect.objectContaining({
+                        owner: 'mallionaire',
+                        title: 'Agricola',
+                        review_id: 1,
+                        category: 'euro game',
+                        review_img_url: 'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
+                        created_at: '2021-01-18T10:00:20.514Z',
+                        votes: 1,
+                        designer: 'Uwe Rosenberg',
+                        review_body: 'Farmyard fun!'
+                })
+            )
+        })
+    })
+    test('Error 404 when review_id does not exist', ()=>{
+        return request(app)
+        .get('/api/reviews/20')
+        .expect(404)
+        .then((res)=>{
+            expect(res.body.msg).toBe('Review ID does not exist')
+        })
+    })
+    test('Error 400 when review_id is not a valid input', ()=>{
+        return request(app)
+        .get('/api/reviews/badrequest')
+        .expect(400)
+        .then((res)=>{
+            expect(res.body.msg).toBe('Bad request!')
+        })
+    })
+})
+
+
+describe('General error handling', ()=>{
     test('responds with route not found when api address spelt wrong', ()=>{
         return request(app)
-        .get('/api/review')
+        .get('/api/categries')
         .expect(404)
         .then((res)=>{
             expect(res.body.msg).toEqual('Route not found')
         })
     })
 })
-
-

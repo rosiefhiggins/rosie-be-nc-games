@@ -193,12 +193,6 @@ describe('GET /api/reviews/:review_id/comments', ()=>{
 })
 
 
-// describe('POST /api/reviews/:review_id/comments', ()=>{
-//     test('responds with status 201 and the comment belonging to the user', ()=>{
-//         const user
-//     })
-// })
-
 
 describe('General error handling', ()=>{
     test('responds with route not found when api address spelt wrong', ()=>{

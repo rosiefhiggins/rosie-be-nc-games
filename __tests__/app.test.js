@@ -194,6 +194,95 @@ describe('GET /api/reviews/:review_id/comments', ()=>{
 
 
 
+describe('POST /api/reviews/:review_id/comments', ()=>{
+    test('responds with status 201 and the comment belonging to the user', ()=>{
+        const user={
+            username: 'bainesface',
+            body: 'Not quite Yorkshire enough for me'
+        }
+        return request(app)
+        .post('/api/reviews/10/comments')
+        .send(user)
+        .expect(201)
+        .then((res)=>{
+            expect(res.body.review_comments).toEqual(
+                expect.objectContaining({
+                    comment_id: 7,
+                    body: 'Not quite Yorkshire enough for me',
+                    votes: 0,
+                    author: 'bainesface',
+                    review_id: 10,
+                    created_at: expect.any(String),
+                })
+            )
+        })
+    })
+    test('responds with status 201, ignoring any additional keys in user object', ()=>{
+        const user={
+            username: 'bainesface',
+            body: 'Not quite Yorkshire enough for me',
+            age: 47
+        }
+        return request(app)
+        .post('/api/reviews/10/comments')
+        .send(user)
+        .expect(201)
+        .then((res)=>{
+            expect(Object.keys(res.body.review_comments).length).toBe(6)
+            expect(res.body.review_comments.age).toBe(undefined)
+    })
+})
+    test('Responds with status 400 when malformed body entered', ()=>{
+        const user={}
+        return request(app)
+        .post('/api/reviews/1/comments')
+        .send(user)
+        .expect(400)
+        .then((res)=>{
+            expect(res.body.msg).toBe('Bad request!')
+        })
+    })
+    test('Responds with 404 when invalid username entered', ()=>{
+        const user={
+            username: 'treetrunk',
+            body: 'Not quite Yorkshire enough for me'
+        }
+        return request(app)
+        .post('/api/reviews/10/comments')
+        .send(user)
+        .expect(404)
+        .then((res)=>{
+            expect(res.body.msg).toBe('Not found')
+        })
+    })
+    test('responds with 404 when a valid id is entered but not found', ()=>{
+        const user={
+            username: 'bainesface',
+            body: 'You just lost the game'
+        }
+        return request(app)
+        .post('/api/reviews/20/comments')
+        .send(user)
+        .expect(404)
+        .then((res)=>{
+            expect(res.body.msg).toBe('Not found')
+        })
+    })
+    test('responds with 400 when an invalid id is entered', ()=>{
+        const user={
+            username: 'bainesface',
+            body: 'You just lost the game'
+        }
+        return request(app)
+        .post('/api/reviews/notanid/comments')
+        .send(user)
+        .expect(400)
+        .then((res)=>{
+            expect(res.body.msg).toBe('Bad request!')
+        })
+    })
+})
+
 describe('General error handling', ()=>{
     test('responds with route not found when api address spelt wrong', ()=>{
         return request(app)
